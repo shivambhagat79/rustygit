@@ -1,8 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use rustygit::repo;
 use std::path::PathBuf;
-
-mod repo;
 
 #[derive(Parser)]
 #[command(name = "rustygit")]
