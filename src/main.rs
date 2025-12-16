@@ -37,6 +37,15 @@ enum Commands {
     /// This command creates a tree object representing the
     /// current state of the directory and stores it in the object database.
     WriteTree,
+    /// Commit the current tree with a message
+    ///
+    /// This command creates a commit object that points to the current tree
+    /// and includes a commit message.
+    Commit {
+        /// The commit message describing the changes.
+        #[arg(short, long)]
+        message: Option<String>,
+    },
 }
 
 fn main() -> Result<()> {
@@ -55,6 +64,12 @@ fn main() -> Result<()> {
         Commands::WriteTree => {
             let hash = object::write_tree(&PathBuf::from("."))?;
             println!("{}", hash);
+        }
+        Commands::Commit { message } => {
+            let message = message.unwrap_or_else(|| String::from(""));
+            let commit_hash = object::commit(&PathBuf::from("."), message);
+
+            println!("Committed Successfully!\nHash: {}", commit_hash?);
         }
     }
 
