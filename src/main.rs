@@ -32,6 +32,11 @@ enum Commands {
         /// This is the path to the file that you want to hash.
         file: PathBuf,
     },
+    /// Write the current directory tree as a Git object
+    ///
+    /// This command creates a tree object representing the
+    /// current state of the directory and stores it in the object database.
+    WriteTree,
 }
 
 fn main() -> Result<()> {
@@ -44,7 +49,12 @@ fn main() -> Result<()> {
             println!("Initialised Empty Rusty Git Repository.");
         }
         Commands::HashObject { file } => {
-            object::hash_object(&file)?;
+            let hash = object::hash_object(&file)?;
+            println!("{}", hash);
+        }
+        Commands::WriteTree => {
+            let hash = object::write_tree(&PathBuf::from("."))?;
+            println!("{}", hash);
         }
     }
 
