@@ -62,7 +62,7 @@ fn main() -> Result<()> {
             println!("{}", hash);
         }
         Commands::WriteTree => {
-            let hash = object::write_tree(&PathBuf::from("."))?;
+            let hash = object::write_tree(&PathBuf::from("."), &PathBuf::from("."))?;
             println!("{}", hash);
         }
         Commands::Commit { message } => {

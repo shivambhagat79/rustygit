@@ -107,8 +107,7 @@ fn format_tree(entries: &[TreeEntry]) -> Vec<u8> {
     result
 }
 
-pub fn write_tree(path: &Path) -> Result<String> {
-    let repo_root = std::env::current_dir()?;
+pub fn write_tree(repo_root: &Path, path: &Path) -> Result<String> {
     let mut entries: Vec<TreeEntry> = Vec::new();
 
     for entry in fs::read_dir(path)? {
@@ -121,14 +120,14 @@ pub fn write_tree(path: &Path) -> Result<String> {
         }
 
         if entry_path.is_dir() {
-            let tree_hash = write_tree(&entry_path)?;
+            let tree_hash = write_tree(repo_root, &entry_path)?;
             entries.push(TreeEntry {
                 mode: "40000",
                 name,
                 hash: utils::hex_to_bytes(&tree_hash),
             });
         } else if entry_path.is_file() {
-            let blob_hash = write_blob(&repo_root, &entry_path)?;
+            let blob_hash = write_blob(repo_root, &entry_path)?;
             entries.push(TreeEntry {
                 mode: "100644",
                 name,
@@ -142,7 +141,7 @@ pub fn write_tree(path: &Path) -> Result<String> {
     let tree_bytes = format_tree(&entries);
     let tree_hash = hash_bytes(&tree_bytes);
 
-    write_object(&repo_root, &tree_hash, &tree_bytes)?;
+    write_object(repo_root, &tree_hash, &tree_bytes)?;
 
     Ok(tree_hash)
 }
@@ -168,7 +167,7 @@ struct CommitObject {
 }
 
 fn build_commit(path: &Path, message: String) -> Result<CommitObject> {
-    let tree_hash = write_tree(path)?;
+    let tree_hash = write_tree(path, path)?;
     let mut parent: Option<String> = None;
     let author = User {
         name: String::from("Shivam Bhagat"),
