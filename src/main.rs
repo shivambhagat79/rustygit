@@ -1,5 +1,6 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use rustygit::object;
 use rustygit::repo;
 use std::path::PathBuf;
 
@@ -23,6 +24,14 @@ enum Commands {
         /// If no path is provided, the current directory is used.
         path: Option<PathBuf>,
     },
+    /// Hash a file as a Git object
+    ///
+    /// This command computes the SHA-1 hash of a file
+    /// and stores it in the Git object database.
+    HashObject {
+        /// This is the path to the file that you want to hash.
+        file: PathBuf,
+    },
 }
 
 fn main() -> Result<()> {
@@ -33,6 +42,9 @@ fn main() -> Result<()> {
             let target_path = path.unwrap_or_else(|| PathBuf::from("."));
             repo::init(&target_path)?;
             println!("Initialised Empty Rusty Git Repository.");
+        }
+        Commands::HashObject { file } => {
+            object::hash_object(&file)?;
         }
     }
 
