@@ -1,3 +1,2 @@
-pub mod object;
-pub mod repo;
+pub mod commands;
 pub mod utils;

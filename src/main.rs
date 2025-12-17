@@ -1,7 +1,6 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use rustygit::object;
-use rustygit::repo;
+use rustygit::commands;
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -54,20 +53,20 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Init { path } => {
             let target_path = path.unwrap_or_else(|| PathBuf::from("."));
-            repo::init(&target_path)?;
+            commands::init(&target_path)?;
             println!("Initialised Empty Rusty Git Repository.");
         }
         Commands::HashObject { file } => {
-            let hash = object::hash_object(&file)?;
+            let hash = commands::hash_object(&file)?;
             println!("{}", hash);
         }
         Commands::WriteTree => {
-            let hash = object::write_tree(&PathBuf::from("."), &PathBuf::from("."))?;
+            let hash = commands::write_tree(&PathBuf::from("."), &PathBuf::from("."))?;
             println!("{}", hash);
         }
         Commands::Commit { message } => {
             let message = message.unwrap_or_else(|| String::from(""));
-            let commit_hash = object::commit(&PathBuf::from("."), message);
+            let commit_hash = commands::commit(&PathBuf::from("."), message);
 
             println!("Committed Successfully!\nHash: {}", commit_hash?);
         }

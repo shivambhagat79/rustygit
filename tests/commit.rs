@@ -1,7 +1,7 @@
 use std::fs;
 use tempfile::tempdir;
 
-use rustygit::{object, repo, utils};
+use rustygit::{commands, utils};
 
 #[test]
 fn initial_commit_creates_commit_object() {
@@ -10,14 +10,14 @@ fn initial_commit_creates_commit_object() {
     std::env::set_current_dir(&repo_root).unwrap();
 
     // init repository
-    repo::init(&repo_root).unwrap();
+    commands::init(&repo_root).unwrap();
 
     // create a file
     fs::write(repo_root.join("a.txt"), b"hello").unwrap();
 
     // commit
     utils::ensure_repo_exists(&repo_root).unwrap();
-    let commit_hash = object::commit(&repo_root, "initial commit".to_string()).unwrap();
+    let commit_hash = commands::commit(&repo_root, "initial commit".to_string()).unwrap();
 
     // commit object exists
     let (d, f) = commit_hash.split_at(2);
@@ -32,13 +32,13 @@ fn second_commit_has_parent() {
     let repo_root = dir.path().canonicalize().unwrap();
     std::env::set_current_dir(&repo_root).unwrap();
 
-    repo::init(&repo_root).unwrap();
+    commands::init(&repo_root).unwrap();
 
     fs::write(repo_root.join("file.txt"), b"one").unwrap();
-    let first_commit = object::commit(&repo_root, "first".to_string()).unwrap();
+    let first_commit = commands::commit(&repo_root, "first".to_string()).unwrap();
 
     fs::write(repo_root.join("file.txt"), b"two").unwrap();
-    let second_commit = object::commit(&repo_root, "second".to_string()).unwrap();
+    let second_commit = commands::commit(&repo_root, "second".to_string()).unwrap();
 
     let (d, f) = second_commit.split_at(2);
     let commit_path = repo_root.join(".rustygit").join("objects").join(d).join(f);
@@ -57,7 +57,7 @@ fn commit_fails_without_repo() {
 
     fs::write(repo_root.join("file.txt"), b"hello").unwrap();
 
-    let result = object::commit(&repo_root, "should fail".to_string());
+    let result = commands::commit(&repo_root, "should fail".to_string());
 
     assert!(result.is_err());
 }

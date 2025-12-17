@@ -41,7 +41,7 @@ fn object_is_written_to_disk() {
     let file = dir.path().join("data.txt");
     fs::write(&file, b"content").unwrap();
 
-    let hash = rustygit::object::hash_object(&file).unwrap();
+    let hash = rustygit::commands::hash_object(&file).unwrap();
 
     let (d, f) = hash.split_at(2);
     let object_path = dir.path().join(".rustygit").join("objects").join(d).join(f);

@@ -1,7 +1,7 @@
 use std::fs;
 use tempfile::tempdir;
 
-use rustygit::object::write_tree;
+use rustygit::commands::write_tree;
 
 #[test]
 fn write_tree_single_file() {

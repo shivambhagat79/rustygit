@@ -1,4 +1,4 @@
-use rustygit::repo::init;
+use rustygit::commands::init;
 use std::fs;
 use tempfile::tempdir;
 
