@@ -5,7 +5,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-#[derive(Debug)]
 pub enum IgnoreRule {
     File(PathBuf),
     Directory(PathBuf),
@@ -49,10 +48,6 @@ pub fn parse_ignore_file(root_path: &Path) -> Result<Vec<IgnoreRule>> {
         }
 
         ignore_rules.push(IgnoreRule::File(PathBuf::from(line)));
-    }
-
-    for rule in &ignore_rules {
-        println!("Ignore Rule: {:?}", rule);
     }
 
     Ok(ignore_rules)
