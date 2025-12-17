@@ -1,6 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use rustygit::commands;
+use rustygit::utils::IgnoreRule;
+use rustygit::{commands, utils};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -49,26 +50,28 @@ enum Commands {
 
 fn main() -> Result<()> {
     let cli = CLI::parse();
+    let root_path = std::env::current_dir()?;
 
     match cli.command {
         Commands::Init { path } => {
-            let target_path = path.unwrap_or_else(|| PathBuf::from("."));
+            let target_path = path.unwrap_or(root_path);
             commands::init(&target_path)?;
-            println!("Initialised Empty Rusty Git Repository.");
         }
         Commands::HashObject { file } => {
             let hash = commands::hash_object(&file)?;
-            println!("{}", hash);
+            println!("File hashed successfully\nHash: {}", hash);
         }
         Commands::WriteTree => {
-            let hash = commands::write_tree(&PathBuf::from("."), &PathBuf::from("."))?;
-            println!("{}", hash);
+            let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&root_path)?;
+            let hash = commands::write_tree(&root_path, &root_path, &ignore_rules)?;
+            println!("Tree written successfully\nHash: {}", hash);
         }
         Commands::Commit { message } => {
             let message = message.unwrap_or_else(|| String::from(""));
-            let commit_hash = commands::commit(&PathBuf::from("."), message);
+            let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&root_path)?;
+            let commit_hash = commands::commit(&root_path, message, &ignore_rules);
 
-            println!("Committed Successfully!\nHash: {}", commit_hash?);
+            println!("Committed successfully!\nHash: {}", commit_hash?);
         }
     }
 

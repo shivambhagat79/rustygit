@@ -1,3 +1,4 @@
+use crate::utils::IgnoreRule;
 use crate::{commands, utils};
 use anyhow::Result;
 use std::fs;
@@ -19,8 +20,12 @@ struct CommitObject {
     timezone: String,
 }
 
-fn build_commit(path: &Path, message: String) -> Result<CommitObject> {
-    let tree_hash = commands::write_tree(path, path)?;
+fn build_commit(
+    path: &Path,
+    message: String,
+    ignore_rules: &Vec<IgnoreRule>,
+) -> Result<CommitObject> {
+    let tree_hash = commands::write_tree(path, path, ignore_rules)?;
     let mut parent: Option<String> = None;
     let author = User {
         name: String::from("Shivam Bhagat"),
@@ -101,9 +106,9 @@ fn update_head(repo_root: &Path, commit_hash: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn commit(path: &Path, message: String) -> Result<String> {
+pub fn commit(path: &Path, message: String, ignore_rules: &Vec<IgnoreRule>) -> Result<String> {
     utils::ensure_repo_exists(&path)?;
-    let commit_object = build_commit(path, message)?;
+    let commit_object = build_commit(path, message, ignore_rules)?;
     let data = format_commit(commit_object);
     let mut content: Vec<u8> = Vec::new();
 

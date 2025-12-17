@@ -29,7 +29,7 @@ pub fn write_object(repo_root: &Path, hash: &str, data: &[u8]) -> Result<()> {
 
 pub fn write_blob(repo_root: &Path, file_path: &Path) -> Result<String> {
     if !file_path.is_file() {
-        bail!("Not a regular file: {}", file_path.display());
+        bail!("Could not find file: {}", file_path.display());
     }
 
     let content = fs::read(file_path)?;

@@ -1,4 +1,4 @@
-use anyhow::{Result, bail};
+use anyhow::Result;
 use std::fs;
 use std::path::Path;
 
@@ -6,7 +6,8 @@ pub fn init(path: &Path) -> Result<()> {
     let rusty_git_dir = path.join(".rustygit");
 
     if rusty_git_dir.exists() {
-        bail!("Repository already exists at {}", path.display());
+        println!("Repository already exists.");
+        return Ok(());
     }
 
     // Create directory structure
@@ -17,6 +18,8 @@ pub fn init(path: &Path) -> Result<()> {
     // Create HEAD file
     let head_contents = "ref: refs/heads/main\n";
     fs::write(rusty_git_dir.join("HEAD"), head_contents)?;
+
+    println!("Initialised Empty Rusty Git Repository.");
 
     Ok(())
 }

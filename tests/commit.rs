@@ -1,7 +1,10 @@
 use std::fs;
 use tempfile::tempdir;
 
-use rustygit::{commands, utils};
+use rustygit::{
+    commands,
+    utils::{self, IgnoreRule},
+};
 
 #[test]
 fn initial_commit_creates_commit_object() {
@@ -17,7 +20,9 @@ fn initial_commit_creates_commit_object() {
 
     // commit
     utils::ensure_repo_exists(&repo_root).unwrap();
-    let commit_hash = commands::commit(&repo_root, "initial commit".to_string()).unwrap();
+    let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&repo_root).unwrap();
+    let commit_hash =
+        commands::commit(&repo_root, "initial commit".to_string(), &ignore_rules).unwrap();
 
     // commit object exists
     let (d, f) = commit_hash.split_at(2);
@@ -35,10 +40,11 @@ fn second_commit_has_parent() {
     commands::init(&repo_root).unwrap();
 
     fs::write(repo_root.join("file.txt"), b"one").unwrap();
-    let first_commit = commands::commit(&repo_root, "first".to_string()).unwrap();
+    let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&repo_root).unwrap();
+    let first_commit = commands::commit(&repo_root, "first".to_string(), &ignore_rules).unwrap();
 
     fs::write(repo_root.join("file.txt"), b"two").unwrap();
-    let second_commit = commands::commit(&repo_root, "second".to_string()).unwrap();
+    let second_commit = commands::commit(&repo_root, "second".to_string(), &ignore_rules).unwrap();
 
     let (d, f) = second_commit.split_at(2);
     let commit_path = repo_root.join(".rustygit").join("objects").join(d).join(f);
@@ -57,7 +63,8 @@ fn commit_fails_without_repo() {
 
     fs::write(repo_root.join("file.txt"), b"hello").unwrap();
 
-    let result = commands::commit(&repo_root, "should fail".to_string());
+    let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&repo_root).unwrap();
+    let result = commands::commit(&repo_root, "should fail".to_string(), &ignore_rules);
 
     assert!(result.is_err());
 }

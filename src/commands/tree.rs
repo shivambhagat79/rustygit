@@ -1,3 +1,4 @@
+use crate::utils::IgnoreRule;
 use crate::{commands, utils};
 use anyhow::Result;
 use std::fs;
@@ -25,7 +26,7 @@ fn format_tree(entries: &[TreeEntry]) -> Vec<u8> {
     result
 }
 
-pub fn write_tree(repo_root: &Path, path: &Path) -> Result<String> {
+pub fn write_tree(repo_root: &Path, path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String> {
     let mut entries: Vec<TreeEntry> = Vec::new();
 
     for entry in fs::read_dir(path)? {
@@ -37,8 +38,12 @@ pub fn write_tree(repo_root: &Path, path: &Path) -> Result<String> {
             continue;
         }
 
+        if utils::is_ignored(&entry_path, repo_root, ignore_rules) {
+            continue;
+        }
+
         if entry_path.is_dir() {
-            let tree_hash = write_tree(repo_root, &entry_path)?;
+            let tree_hash = write_tree(repo_root, &entry_path, ignore_rules)?;
             entries.push(TreeEntry {
                 mode: "40000",
                 name,
