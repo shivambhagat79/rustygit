@@ -46,6 +46,10 @@ enum Commands {
         #[arg(short, long)]
         message: Option<String>,
     },
+    /// Logs the commit history
+    ///
+    /// This command displays the commit history of the repository.
+    Log,
 }
 
 fn main() -> Result<()> {
@@ -72,6 +76,9 @@ fn main() -> Result<()> {
             let commit_hash = commands::commit(&root_path, message, &ignore_rules);
 
             println!("Committed successfully!\nHash: {}", commit_hash?);
+        }
+        Commands::Log => {
+            commands::log(&root_path)?;
         }
     }
 
