@@ -80,3 +80,48 @@ fn head_is_detached() {
 
     assert_eq!(content, hash_first);
 }
+
+#[test]
+fn checkout_non_existent_hash_and_branch() {
+    let dir = tempdir().unwrap();
+    let repo_root = dir.path().canonicalize().unwrap();
+    std::env::set_current_dir(&repo_root).unwrap();
+
+    // init repository
+    commands::init(&repo_root).unwrap();
+    fs::create_dir_all(repo_root.join(".git")).unwrap();
+
+    let result = commands::checkout(&repo_root, "nonexistenthash");
+
+    assert!(result.is_err());
+}
+
+#[test]
+fn checkout_branch() {
+    let dir = tempdir().unwrap();
+    let repo_root = dir.path().canonicalize().unwrap();
+    std::env::set_current_dir(&repo_root).unwrap();
+
+    // init repository
+    commands::init(&repo_root).unwrap();
+    fs::create_dir_all(repo_root.join(".git")).unwrap();
+
+    // create a file
+    fs::write(repo_root.join("a.txt"), b"one").unwrap();
+
+    commands::commit(&repo_root, String::from("First"), &vec![]).unwrap();
+
+    commands::create_branch(&repo_root, "new-branch").unwrap();
+
+    fs::write(repo_root.join("a.txt"), b"Hello Again").unwrap();
+
+    commands::commit(&repo_root, String::from("two"), &vec![]).unwrap();
+
+    commands::checkout(&repo_root, "new-branch").unwrap();
+
+    let content = fs::read_to_string(repo_root.join("a.txt")).unwrap();
+    let head_content = fs::read_to_string(repo_root.join(".rustygit/HEAD")).unwrap();
+
+    assert_eq!(content, "one");
+    assert!(head_content.contains("refs/heads/new-branch"));
+}

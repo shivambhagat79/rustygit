@@ -5,14 +5,14 @@ use std::{
     path::{Path, PathBuf},
 };
 
-fn get_current_commit_hash(root_path: &Path) -> Result<String> {
-    let head_path = root_path.join(".rustygit/HEAD");
+pub fn get_current_commit_hash(root_path: &Path) -> Result<Option<String>> {
+    let head_path = root_path.join(".rustygit").join("HEAD");
     let head_content = std::fs::read_to_string(head_path)?.trim().to_string();
 
     let ref_path = if head_content.starts_with("ref: ") {
         Some(head_content[5..].trim())
     } else {
-        None
+        return Ok(Some(head_content));
     };
 
     let ref_file_path: PathBuf;
@@ -21,7 +21,7 @@ fn get_current_commit_hash(root_path: &Path) -> Result<String> {
         Some(ref_path) => {
             ref_file_path = root_path.join(".rustygit").join(ref_path);
             if !ref_file_path.exists() {
-                bail!("Reference file does not exist: {}", ref_file_path.display());
+                return Ok(None);
             }
         }
         None => {
@@ -31,7 +31,7 @@ fn get_current_commit_hash(root_path: &Path) -> Result<String> {
 
     let current_commit_hash = std::fs::read_to_string(ref_file_path)?.trim().to_string();
 
-    Ok(current_commit_hash)
+    Ok(Some(current_commit_hash))
 }
 
 fn get_parent_commit_hash(commit_data: &str) -> Option<String> {
@@ -47,7 +47,21 @@ fn get_parent_commit_hash(commit_data: &str) -> Option<String> {
 pub fn log(root_path: &Path) -> Result<()> {
     utils::ensure_repo_exists(root_path)?;
 
-    let mut commit_hash = get_current_commit_hash(root_path)?;
+    let commit_hash = get_current_commit_hash(root_path)?;
+
+    let mut commit_hash = match commit_hash {
+        Some(hash) => {
+            if hash.is_empty() {
+                println!("No commits found in the repository.");
+                return Ok(());
+            }
+            hash
+        }
+        None => {
+            println!("No commits found in the repository.");
+            return Ok(());
+        }
+    };
 
     println!("Rusty Git Commit history:\n");
 

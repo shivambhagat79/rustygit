@@ -1,6 +1,6 @@
 use crate::utils::IgnoreRule;
 use crate::{commands, utils};
-use anyhow::Result;
+use anyhow::{Result, bail};
 use std::fs;
 use std::path::Path;
 
@@ -33,15 +33,17 @@ fn build_commit(
     };
     let committer = author.clone();
 
-    let head_path = path
-        .join(".rustygit")
-        .join("refs")
-        .join("heads")
-        .join("main");
+    let head_path = path.join(".rustygit").join("HEAD");
+    let head_content = fs::read_to_string(&head_path)?;
+    let ref_path = head_content[5..].trim();
 
-    if head_path.exists() {
-        let parent_content = fs::read_to_string(&head_path)?;
-        parent = Some(parent_content.trim().to_string());
+    let head_ref_path = path.join(".rustygit").join(ref_path);
+
+    if head_ref_path.exists() {
+        let parent_content = fs::read_to_string(&head_ref_path)?;
+        if !parent_content.trim().is_empty() {
+            parent = Some(parent_content.trim().to_string());
+        }
     }
 
     let (timestamp, timezone) = utils::get_time();
@@ -96,11 +98,11 @@ fn format_commit(commit_object: CommitObject) -> Vec<u8> {
 }
 
 fn update_head(repo_root: &Path, commit_hash: &str) -> Result<()> {
-    let head_ref_path = repo_root
-        .join(".rustygit")
-        .join("refs")
-        .join("heads")
-        .join("main");
+    let head_path = repo_root.join(".rustygit").join("HEAD");
+    let head_content = fs::read_to_string(&head_path)?;
+    let ref_path = head_content[5..].trim();
+
+    let head_ref_path = repo_root.join(".rustygit").join(ref_path);
 
     fs::write(head_ref_path, format!("{}\n", commit_hash))?;
     Ok(())
@@ -108,6 +110,15 @@ fn update_head(repo_root: &Path, commit_hash: &str) -> Result<()> {
 
 pub fn commit(path: &Path, message: String, ignore_rules: &Vec<IgnoreRule>) -> Result<String> {
     utils::ensure_repo_exists(&path)?;
+
+    // ensure head is attached
+    let head_path = path.join(".rustygit").join("HEAD");
+    let head_content = fs::read_to_string(&head_path)?;
+
+    if !head_content.starts_with("ref: ") {
+        bail!("Cannot commit: HEAD is detached.");
+    }
+
     let commit_object = build_commit(path, message, ignore_rules)?;
     let data = format_commit(commit_object);
     let mut content: Vec<u8> = Vec::new();

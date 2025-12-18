@@ -18,6 +18,7 @@ pub fn init(path: &Path) -> Result<()> {
     // Create HEAD file
     let head_contents = "ref: refs/heads/main\n";
     fs::write(rusty_git_dir.join("HEAD"), head_contents)?;
+    fs::write(rusty_git_dir.join("refs").join("heads").join("main"), "")?;
 
     println!("Initialised Empty Rusty Git Repository.");
 

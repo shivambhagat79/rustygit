@@ -58,6 +58,13 @@ enum Commands {
         /// The target commit hash or branch name to checkout.
         target: String,
     },
+    /// Create a new branch
+    ///
+    /// This command creates a new branch pointing to the current commit.
+    Branch {
+        /// The name of the branch to create.
+        branch_name: Option<String>,
+    },
 }
 
 fn main() -> Result<()> {
@@ -91,6 +98,15 @@ fn main() -> Result<()> {
         Commands::Checkout { target } => {
             commands::checkout(&root_path, &target)?;
         }
+        Commands::Branch { branch_name } => match branch_name {
+            Some(branch_name) => {
+                commands::create_branch(&root_path, &branch_name)?;
+                println!("Branch '{}' created successfully", branch_name);
+            }
+            None => {
+                commands::branch(&root_path)?;
+            }
+        },
     }
 
     Ok(())

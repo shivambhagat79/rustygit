@@ -68,3 +68,28 @@ fn commit_fails_without_repo() {
 
     assert!(result.is_err());
 }
+
+#[test]
+fn commit_fails_on_detached_head() {
+    let dir = tempdir().unwrap();
+    let repo_root = dir.path().canonicalize().unwrap();
+    std::env::set_current_dir(&repo_root).unwrap();
+
+    commands::init(&repo_root).unwrap();
+
+    fs::write(repo_root.join("file.txt"), b"one").unwrap();
+    let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&repo_root).unwrap();
+    let commit_hash = commands::commit(&repo_root, "first".to_string(), &ignore_rules).unwrap();
+
+    // Manually set HEAD to a commit hash to simulate detached HEAD
+    fs::write(
+        repo_root.join(".rustygit").join("HEAD"),
+        format!("{}\n", commit_hash),
+    )
+    .unwrap();
+
+    fs::write(repo_root.join("file.txt"), b"two").unwrap();
+    let result = commands::commit(&repo_root, "second".to_string(), &ignore_rules);
+
+    assert!(result.is_err());
+}
