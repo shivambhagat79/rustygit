@@ -4,10 +4,10 @@ use anyhow::Result;
 use std::fs;
 use std::path::Path;
 
-struct TreeEntry {
-    mode: &'static str,
-    name: String,
-    hash: [u8; 20],
+pub struct TreeEntry {
+    pub(crate) mode: &'static str,
+    pub(crate) name: String,
+    pub(crate) hash: [u8; 20],
 }
 
 fn format_tree(entries: &[TreeEntry]) -> Vec<u8> {
@@ -50,6 +50,20 @@ pub fn write_tree(repo_root: &Path, path: &Path, ignore_rules: &Vec<IgnoreRule>)
                 hash: utils::hex_to_bytes(&tree_hash),
             });
         } else if entry_path.is_file() {
+            // skip rustygit.exe on Windows
+            #[cfg(target_os = "windows")]
+            {
+                if name == "rustygit.exe" {
+                    continue;
+                }
+            }
+            // skip rustygit on Unix-like systems
+            #[cfg(not(target_os = "windows"))]
+            {
+                if name == "rustygit" {
+                    continue;
+                }
+            }
             let blob_hash = commands::write_blob(repo_root, &entry_path)?;
             entries.push(TreeEntry {
                 mode: "100644",

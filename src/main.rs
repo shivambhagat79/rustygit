@@ -50,6 +50,14 @@ enum Commands {
     ///
     /// This command displays the commit history of the repository.
     Log,
+    /// Checkout a specific commit or branch
+    ///
+    /// This command updates the working directory to match the specified commit or branch
+    /// and moves the head to that commit.
+    Checkout {
+        /// The target commit hash or branch name to checkout.
+        target: String,
+    },
 }
 
 fn main() -> Result<()> {
@@ -79,6 +87,9 @@ fn main() -> Result<()> {
         }
         Commands::Log => {
             commands::log(&root_path)?;
+        }
+        Commands::Checkout { target } => {
+            commands::checkout(&root_path, &target)?;
         }
     }
 

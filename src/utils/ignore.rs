@@ -16,7 +16,6 @@ pub fn parse_ignore_file(root_path: &Path) -> Result<Vec<IgnoreRule>> {
     let mut ignore_rules: Vec<IgnoreRule> = Vec::new();
 
     if !ignore_file_path.exists() {
-        println!("no file");
         return Ok(Vec::new());
     }
 
