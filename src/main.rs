@@ -65,6 +65,11 @@ enum Commands {
         /// The name of the branch to create.
         branch_name: Option<String>,
     },
+    /// Show the status of the working directory
+    ///
+    /// This command displays the status of files in the working directory,
+    /// indicating which files are staged, modified, or untracked.
+    Status,
 }
 
 fn main() -> Result<()> {
@@ -107,6 +112,11 @@ fn main() -> Result<()> {
                 commands::branch(&root_path)?;
             }
         },
+        Commands::Status => {
+            let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&root_path)?;
+            let status = commands::status(&root_path, &ignore_rules)?;
+            println!("\n{}", status);
+        }
     }
 
     Ok(())
