@@ -17,9 +17,9 @@ fn restore_file() {
 
     let hash_first = commands::commit(&repo_root, String::from("First"), &vec![]).unwrap();
 
-    fs::write(repo_root.join("a.txt"), b"Hello Again").unwrap();
+    fs::write(repo_root.join("a.txt"), b"two").unwrap();
 
-    commands::commit(&repo_root, String::from("two"), &vec![]).unwrap();
+    commands::commit(&repo_root, String::from("Second"), &vec![]).unwrap();
 
     commands::checkout(&repo_root, &hash_first).unwrap();
 

@@ -3,7 +3,7 @@ use anyhow::{Result, bail};
 use std::fs;
 use std::path::Path;
 
-fn format_object(contents: &[u8]) -> Vec<u8> {
+pub fn format_object(contents: &[u8]) -> Vec<u8> {
     let header = format!("blob {}\0", contents.len());
     let mut result = Vec::with_capacity(header.len() + contents.len());
     result.extend_from_slice(header.as_bytes());

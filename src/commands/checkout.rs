@@ -100,6 +100,8 @@ fn checkout_hash(root_path: &Path, target: &str) -> Result<()> {
 
     let tree_hash = &commit_content[5..n_idx];
 
+    utils::checkout_safety_check(root_path, Some(tree_hash.to_string()))?;
+
     clear_repository(root_path)?;
 
     restore_tree(root_path, root_path, tree_hash)?;
@@ -130,7 +132,13 @@ fn checkout_branch(root_path: &Path, branch_name: &str) -> Result<()> {
 
         let tree_hash = &commit_content[5..n_idx];
 
+        utils::checkout_safety_check(root_path, Some(tree_hash.to_string()))?;
+
+        clear_repository(root_path)?;
+
         restore_tree(root_path, root_path, tree_hash)?;
+    } else {
+        clear_repository(root_path)?;
     }
 
     let head_path = root_path.join(".rustygit").join("HEAD");

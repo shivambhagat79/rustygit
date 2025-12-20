@@ -14,6 +14,7 @@ pub use checkout::checkout;
 pub use commit::commit;
 pub use init::init;
 pub use log::log;
+pub use object::format_object;
 pub use object::hash_object;
 pub use object::write_blob;
 pub use object::write_object;

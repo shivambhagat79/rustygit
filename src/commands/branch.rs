@@ -1,4 +1,3 @@
-use crate::commands::log;
 use crate::utils;
 use anyhow::{Result, bail};
 use std::fs;
@@ -28,7 +27,7 @@ pub fn create_branch(root_path: &Path, branch_name: &str) -> Result<()> {
         bail!("Branch '{}' already exists.", branch_name);
     }
 
-    let current_commit_hash = log::get_current_commit_hash(root_path)?.unwrap_or_default();
+    let current_commit_hash = utils::get_current_commit_hash(root_path)?.unwrap_or_default();
 
     fs::write(refs_path.join(branch_name), &current_commit_hash)?;
 
