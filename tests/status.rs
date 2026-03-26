@@ -16,6 +16,7 @@ fn clean_repo_status() {
     assert!(status.contains("Working directory clean."));
 
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     commands::commit(&repo_root, String::from("First"), &ignore_rules).unwrap();
     let status = commands::status(&repo_root, &ignore_rules).unwrap();
     assert!(status.contains("Working directory clean."));
@@ -38,12 +39,13 @@ fn modified_file_status() {
 
     let ignore_rules = vec![];
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     commands::commit(&repo_root, String::from("First"), &ignore_rules).unwrap();
     fs::write(repo_root.join("a.txt"), b"modified").unwrap();
 
     let status = commands::status(&repo_root, &ignore_rules).unwrap();
 
-    assert!(status.contains("Modified files:\n\t\ta.txt"));
+    assert!(status.contains("Modified files:\n\t\t\ta.txt"));
 }
 
 #[test]
@@ -72,12 +74,13 @@ fn ignored_file_status() {
     // init repository
     commands::init(&repo_root).unwrap();
 
-    fs::write(repo_root.join(".rustygitignore"), b"b.txt").unwrap();
+    fs::write(repo_root.join(".rustygitignore"), b"b.txt\n.rustygitignore").unwrap();
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
     fs::write(repo_root.join("b.txt"), b"Ignored").unwrap();
 
     let ignore_rules = utils::parse_ignore_file(&repo_root).unwrap();
 
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     commands::commit(&repo_root, String::from("First"), &ignore_rules).unwrap();
 
     fs::write(repo_root.join("b.txt"), b"one").unwrap();
@@ -99,11 +102,12 @@ fn deleted_file_status() {
 
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
 
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     commands::commit(&repo_root, String::from("First"), &vec![]).unwrap();
 
     fs::remove_file(repo_root.join("a.txt")).unwrap();
 
     let status = commands::status(&repo_root, &vec![]).unwrap();
 
-    assert!(status.contains("Deleted files:\n\t\ta.txt"));
+    assert!(status.contains("Deleted files:\n\t\t\ta.txt"));
 }

@@ -9,6 +9,7 @@ use std::{
 pub fn status(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String> {
     let mut work_dir_map: HashMap<PathBuf, String> = HashMap::new();
     utils::get_work_dir_map(root_path, Path::new(""), &mut work_dir_map)?;
+    let index_map = utils::read_index_map(root_path)?;
 
     let cur_tree_hash = utils::get_current_tree_hash(root_path)?;
     let mut cur_tree_map: HashMap<PathBuf, String> = HashMap::new();
@@ -17,19 +18,39 @@ pub fn status(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String
     }
 
     let mut clean: bool = true;
+    let mut staged_files: Vec<PathBuf> = Vec::new();
     let mut modified_files: Vec<PathBuf> = Vec::new();
     let mut deleted_files: Vec<PathBuf> = Vec::new();
     let mut untracked_files: Vec<PathBuf> = Vec::new();
+
+    for (path, index_hash) in index_map.iter() {
+        if utils::is_ignored(&root_path.join(path), root_path, ignore_rules) {
+            continue;
+        }
+
+        match cur_tree_map.get(path) {
+            Some(current_hash) => {
+                if current_hash != index_hash {
+                    staged_files.push(path.clone());
+                    clean = false;
+                }
+            }
+            None => {
+                staged_files.push(path.clone());
+                clean = false;
+            }
+        }
+    }
 
     for (path, work_hash) in work_dir_map.iter() {
         if utils::is_ignored(&root_path.join(path), root_path, ignore_rules) {
             continue;
         }
-        let in_current = cur_tree_map.get(path);
+        let in_index = index_map.get(path);
 
-        match in_current {
-            Some(cur_hash) => {
-                if work_hash != cur_hash {
+        match in_index {
+            Some(index_hash) => {
+                if work_hash != index_hash {
                     modified_files.push(path.clone());
                     clean = false;
                 }
@@ -41,7 +62,7 @@ pub fn status(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String
         }
     }
 
-    for (path, _) in cur_tree_map.iter() {
+    for (path, _) in index_map.iter() {
         if utils::is_ignored(&root_path.join(path), root_path, ignore_rules) {
             continue;
         }
@@ -52,6 +73,11 @@ pub fn status(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String
             clean = false;
         }
     }
+
+    staged_files.sort();
+    modified_files.sort();
+    deleted_files.sort();
+    untracked_files.sort();
 
     let head_path = root_path.join(".rustygit").join("HEAD");
     let head_content = fs::read_to_string(&head_path)?;
@@ -75,24 +101,34 @@ pub fn status(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String
     if clean {
         output_string.push_str("Working directory clean.\n");
     } else {
-        println!("Changes not staged for commit:");
-        if !modified_files.is_empty() {
-            output_string.push_str("\tModified files:\n");
-            for file in modified_files {
+        if !staged_files.is_empty() {
+            output_string.push_str("\tStaged files:\n");
+            for file in &staged_files {
                 output_string.push_str(&format!("\t\t{}\n", file.display()));
             }
         }
 
+        if !modified_files.is_empty() {
+            output_string.push_str("\tChanges not staged for commit:\n");
+            output_string.push_str("\t\tModified files:\n");
+            for file in &modified_files {
+                output_string.push_str(&format!("\t\t\t{}\n", file.display()));
+            }
+        }
+
         if !deleted_files.is_empty() {
-            output_string.push_str("\tDeleted files:\n");
-            for file in deleted_files {
-                output_string.push_str(&format!("\t\t{}\n", file.display()));
+            if modified_files.is_empty() {
+                output_string.push_str("\tChanges not staged for commit:\n");
+            }
+            output_string.push_str("\t\tDeleted files:\n");
+            for file in &deleted_files {
+                output_string.push_str(&format!("\t\t\t{}\n", file.display()));
             }
         }
 
         if !untracked_files.is_empty() {
             output_string.push_str("\tUntracked files:\n");
-            for file in untracked_files {
+            for file in &untracked_files {
                 output_string.push_str(&format!("\t\t{}\n", file.display()));
             }
         }

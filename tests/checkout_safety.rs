@@ -1,5 +1,5 @@
 use rustygit::commands;
-use std::fs;
+use std::{collections::HashMap, fs};
 use tempfile::tempdir;
 
 #[test]
@@ -13,10 +13,12 @@ fn untracked_file_blocks_checkout() {
 
     // commit with a.txt
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     let hash_first = commands::commit(&repo_root, "First".to_string(), &vec![]).unwrap();
 
     // second commit removes a.txt
     fs::remove_file(repo_root.join("a.txt")).unwrap();
+    rustygit::utils::write_index_map(&repo_root, &HashMap::new()).unwrap();
     commands::commit(&repo_root, "Second".to_string(), &vec![]).unwrap();
 
     // untracked file at path that target wants to write
@@ -38,10 +40,12 @@ fn modified_tracked_file_blocks_checkout() {
 
     // initial commit
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     let hash_first = commands::commit(&repo_root, "First".to_string(), &vec![]).unwrap();
 
     // second commit changes the file
     fs::write(repo_root.join("a.txt"), b"two").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     commands::commit(&repo_root, "Second".to_string(), &vec![]).unwrap();
 
     // modify tracked file again (dirty working tree)
@@ -62,10 +66,12 @@ fn modified_tracked_file_blocks_checkout_on_delete() {
 
     // commit with file
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     let hash_first = commands::commit(&repo_root, "First".to_string(), &vec![]).unwrap();
 
     // commit that removes the file
     fs::remove_file(repo_root.join("a.txt")).unwrap();
+    rustygit::utils::write_index_map(&repo_root, &HashMap::new()).unwrap();
     let hash_second = commands::commit(&repo_root, "Second".to_string(), &vec![]).unwrap();
 
     // checkout back to first
@@ -89,9 +95,11 @@ fn unmodified_tracked_file_allows_checkout() {
     fs::create_dir_all(repo_root.join(".git")).unwrap();
 
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     let hash_first = commands::commit(&repo_root, "First".to_string(), &vec![]).unwrap();
 
     fs::write(repo_root.join("a.txt"), b"two").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     commands::commit(&repo_root, "Second".to_string(), &vec![]).unwrap();
 
     let result = commands::checkout(&repo_root, &hash_first);
@@ -111,6 +119,7 @@ fn untracked_file_not_overwritten_is_allowed() {
     fs::create_dir_all(repo_root.join(".git")).unwrap();
 
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     let hash_first = commands::commit(&repo_root, "First".to_string(), &vec![]).unwrap();
 
     // untracked file that target does not touch
@@ -130,6 +139,7 @@ fn modified_file_allowed_if_target_keeps_same_version() {
     fs::create_dir_all(repo_root.join(".git")).unwrap();
 
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     let hash_first = commands::commit(&repo_root, "First".to_string(), &vec![]).unwrap();
 
     // checkout same commit (no tree change)

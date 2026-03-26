@@ -1,3 +1,4 @@
+mod add;
 mod branch;
 mod checkout;
 mod commit;
@@ -10,6 +11,7 @@ mod tree;
 
 pub use tree::TreeEntry;
 
+pub use add::add;
 pub use branch::branch;
 pub use branch::create_branch;
 pub use checkout::checkout;

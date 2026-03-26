@@ -21,6 +21,7 @@ fn initial_commit_creates_commit_object() {
     // commit
     utils::ensure_repo_exists(&repo_root).unwrap();
     let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&repo_root).unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
     let commit_hash =
         commands::commit(&repo_root, "initial commit".to_string(), &ignore_rules).unwrap();
 
@@ -41,9 +42,11 @@ fn second_commit_has_parent() {
 
     fs::write(repo_root.join("file.txt"), b"one").unwrap();
     let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&repo_root).unwrap();
+    commands::add(&repo_root, &repo_root.join("file.txt")).unwrap();
     let first_commit = commands::commit(&repo_root, "first".to_string(), &ignore_rules).unwrap();
 
     fs::write(repo_root.join("file.txt"), b"two").unwrap();
+    commands::add(&repo_root, &repo_root.join("file.txt")).unwrap();
     let second_commit = commands::commit(&repo_root, "second".to_string(), &ignore_rules).unwrap();
 
     let (d, f) = second_commit.split_at(2);
@@ -79,6 +82,7 @@ fn commit_fails_on_detached_head() {
 
     fs::write(repo_root.join("file.txt"), b"one").unwrap();
     let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&repo_root).unwrap();
+    commands::add(&repo_root, &repo_root.join("file.txt")).unwrap();
     let commit_hash = commands::commit(&repo_root, "first".to_string(), &ignore_rules).unwrap();
 
     // Manually set HEAD to a commit hash to simulate detached HEAD

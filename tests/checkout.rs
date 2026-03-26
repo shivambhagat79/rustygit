@@ -14,10 +14,12 @@ fn restore_file() {
 
     // create a file
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
 
     let hash_first = commands::commit(&repo_root, String::from("First"), &vec![]).unwrap();
 
     fs::write(repo_root.join("a.txt"), b"two").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
 
     commands::commit(&repo_root, String::from("Second"), &vec![]).unwrap();
 
@@ -41,10 +43,12 @@ fn restore_directory() {
     // create a directory with a file
     fs::create_dir_all(repo_root.join("dir")).unwrap();
     fs::write(repo_root.join("dir").join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("dir").join("a.txt")).unwrap();
 
     let hash_first = commands::commit(&repo_root, String::from("First"), &vec![]).unwrap();
 
     fs::write(repo_root.join("dir").join("a.txt"), b"two").unwrap();
+    commands::add(&repo_root, &repo_root.join("dir").join("a.txt")).unwrap();
 
     commands::commit(&repo_root, String::from("Second"), &vec![]).unwrap();
 
@@ -67,10 +71,12 @@ fn head_is_detached() {
 
     // create a file
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
 
     let hash_first = commands::commit(&repo_root, String::from("First"), &vec![]).unwrap();
 
     fs::write(repo_root.join("a.txt"), b"Hello Again").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
 
     commands::commit(&repo_root, String::from("two"), &vec![]).unwrap();
 
@@ -108,12 +114,14 @@ fn checkout_branch() {
 
     // create a file
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
 
     commands::commit(&repo_root, String::from("First"), &vec![]).unwrap();
 
     commands::create_branch(&repo_root, "new-branch").unwrap();
 
     fs::write(repo_root.join("a.txt"), b"Hello Again").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
 
     commands::commit(&repo_root, String::from("two"), &vec![]).unwrap();
 

@@ -21,6 +21,7 @@ fn diff_no_changes_after_commit() {
 
     commands::init(repo_root).unwrap();
     fs::write(repo_root.join("a.txt"), b"line one\nline two\n").unwrap();
+    commands::add(repo_root, &repo_root.join("a.txt")).unwrap();
     commands::commit(repo_root, "initial".to_string(), &vec![]).unwrap();
 
     let output = run_diff(repo_root);
@@ -35,6 +36,7 @@ fn diff_single_line_change_shows_one_deletion_and_insertion() {
 
     commands::init(repo_root).unwrap();
     fs::write(repo_root.join("a.txt"), b"line one\nline two\n").unwrap();
+    commands::add(repo_root, &repo_root.join("a.txt")).unwrap();
     commands::commit(repo_root, "initial".to_string(), &vec![]).unwrap();
 
     fs::write(repo_root.join("a.txt"), b"line one\nline changed\n").unwrap();
@@ -55,6 +57,8 @@ fn diff_multiple_files_lists_both_files() {
     commands::init(repo_root).unwrap();
     fs::write(repo_root.join("a.txt"), b"alpha\n").unwrap();
     fs::write(repo_root.join("b.txt"), b"beta\n").unwrap();
+    commands::add(repo_root, &repo_root.join("a.txt")).unwrap();
+    commands::add(repo_root, &repo_root.join("b.txt")).unwrap();
     commands::commit(repo_root, "initial".to_string(), &vec![]).unwrap();
 
     fs::write(repo_root.join("a.txt"), b"alpha changed\n").unwrap();
@@ -74,6 +78,7 @@ fn delete_one_file_shows_deleted_file() {
 
     commands::init(repo_root).unwrap();
     fs::write(repo_root.join("a.txt"), b"alpha\n").unwrap();
+    commands::add(repo_root, &repo_root.join("a.txt")).unwrap();
     commands::commit(repo_root, "initial".to_string(), &vec![]).unwrap();
 
     fs::remove_file(repo_root.join("a.txt")).unwrap();

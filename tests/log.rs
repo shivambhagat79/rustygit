@@ -10,6 +10,7 @@ fn log_single_commit() {
 
     commands::init(&root).unwrap();
     fs::write(root.join("file.txt"), "hello").unwrap();
+    commands::add(&root, &root.join("file.txt")).unwrap();
 
     commands::commit(&root, "first".to_string(), &vec![]).unwrap();
 
@@ -34,6 +35,7 @@ fn log_fails_on_missing_parent_object() {
 
     commands::init(&root).unwrap();
     fs::write(root.join("file.txt"), "hello").unwrap();
+    commands::add(&root, &root.join("file.txt")).unwrap();
 
     let commit = commands::commit(&root, "first".to_string(), &vec![]).unwrap();
 

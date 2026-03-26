@@ -32,6 +32,11 @@ enum Commands {
         /// This is the path to the file that you want to hash.
         file: PathBuf,
     },
+    /// Stage a file into the index
+    Add {
+        /// File to stage
+        file: PathBuf,
+    },
     /// Write the current directory tree as a Git object
     ///
     /// This command creates a tree object representing the
@@ -85,6 +90,10 @@ fn main() -> Result<()> {
         Commands::HashObject { file } => {
             let hash = commands::hash_object(&file)?;
             println!("File hashed successfully\nHash: {}", hash);
+        }
+        Commands::Add { file } => {
+            commands::add(&root_path, &file)?;
+            println!("Added {}", file.display());
         }
         Commands::WriteTree => {
             let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&root_path)?;

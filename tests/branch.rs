@@ -14,6 +14,7 @@ fn branch_created() {
 
     // create a file
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
 
     let commit_hash = commands::commit(&repo_root, String::from("First"), &vec![]).unwrap();
 
@@ -46,6 +47,7 @@ fn list_branches() {
 
     // create a file
     fs::write(repo_root.join("a.txt"), b"one").unwrap();
+    commands::add(&repo_root, &repo_root.join("a.txt")).unwrap();
 
     commands::commit(&repo_root, String::from("First"), &vec![]).unwrap();
 

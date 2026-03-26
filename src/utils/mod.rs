@@ -2,6 +2,7 @@ mod date_time;
 mod filesystem;
 mod hashing;
 mod ignore;
+mod index;
 mod parse;
 mod safety_checks;
 mod status;
@@ -37,6 +38,12 @@ pub use status::get_current_commit_hash;
 pub use status::get_current_tree_hash;
 pub use status::get_tree_files_map;
 pub use status::get_work_dir_map;
+
+// Index Utilities
+pub use index::clear_index;
+pub use index::read_index_map;
+pub use index::stage_index_entry;
+pub use index::write_index_map;
 
 // String Formatting Utilities
 pub use string_format::format_commit_history;

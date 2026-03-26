@@ -13,6 +13,7 @@ fn test_init_command() {
 
     assert!(git_dir.exists());
     assert!(git_dir.join("objects").exists());
+    assert!(git_dir.join("index").exists());
     assert!(git_dir.join("refs").join("heads").exists());
     assert!(git_dir.join("refs").join("tags").exists());
 

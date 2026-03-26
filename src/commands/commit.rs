@@ -33,6 +33,8 @@ fn build_commit(
     };
     let committer = author.clone();
 
+    let _ = ignore_rules;
+
     let head_path = path.join(".rustygit").join("HEAD");
     let head_content = fs::read_to_string(&head_path)?;
     let ref_path = head_content[5..].trim();
