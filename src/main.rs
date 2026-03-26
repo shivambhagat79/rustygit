@@ -42,6 +42,19 @@ enum Commands {
         /// File to remove
         file: PathBuf,
     },
+    /// Restore a file from the index
+    Restore {
+        /// File to restore
+        file: PathBuf,
+    },
+    /// Reset HEAD to a commit, optionally preserving index
+    Reset {
+        /// Target commit hash
+        target: String,
+        /// Soft reset (move HEAD only)
+        #[arg(long)]
+        soft: bool,
+    },
     /// Write the current directory tree as a Git object
     ///
     /// This command creates a tree object representing the
@@ -107,6 +120,18 @@ fn main() -> Result<()> {
         Commands::Rm { file } => {
             commands::rm(&root_path, &file)?;
             println!("Removed {}", file.display());
+        }
+        Commands::Restore { file } => {
+            commands::restore(&root_path, &file)?;
+            println!("Restored {}", file.display());
+        }
+        Commands::Reset { target, soft } => {
+            commands::reset(&root_path, &target, soft)?;
+            if soft {
+                println!("Soft reset to {}", target);
+            } else {
+                println!("Mixed reset to {}", target);
+            }
         }
         Commands::WriteTree => {
             let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&root_path)?;
