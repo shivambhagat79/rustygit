@@ -1,3 +1,5 @@
+//! Commit creation and index-to-history transitions.
+
 use crate::utils::IgnoreRule;
 use crate::{commands, utils};
 use anyhow::{Result, bail};
@@ -133,6 +135,9 @@ fn ensure_index_has_head_snapshot(root_path: &Path) -> Result<()> {
 }
 
 fn auto_stage_tracked_files(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<()> {
+    // `commit -a` stages tracked modifications and deletions by comparing
+    // the current HEAD tree with working-directory hashes.
+    // Untracked paths are intentionally ignored.
     let current_tree_map = get_current_tree_map(root_path)?;
     let mut work_dir_map = HashMap::new();
     utils::get_work_dir_map(root_path, Path::new(""), &mut work_dir_map)?;
@@ -165,6 +170,10 @@ fn auto_stage_tracked_files(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) ->
     Ok(())
 }
 
+/// Creates a commit from the index, optionally auto-staging tracked changes.
+///
+/// When `all` is true, tracked modifications and deletions are staged first,
+/// matching the behavior of `commit -a`.
 pub fn commit_with_all(
     path: &Path,
     message: String,
@@ -203,6 +212,9 @@ pub fn commit_with_all(
     Ok(hash)
 }
 
+/// Creates a commit from the index.
+///
+/// This variant does not auto-stage working directory changes.
 pub fn commit(path: &Path, message: String, ignore_rules: &Vec<IgnoreRule>) -> Result<String> {
     commit_with_all(path, message, ignore_rules, false)
 }

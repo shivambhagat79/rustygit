@@ -1,3 +1,5 @@
+//! Checkout logic for switching branches or commits safely.
+
 use crate::{commands::TreeEntry, utils};
 use anyhow::{Result, anyhow, bail};
 use std::{fs, path::Path};
@@ -72,6 +74,8 @@ fn clear_repository(root_path: &Path) -> Result<()> {
 }
 
 fn restore_tree(root_path: &Path, path: &Path, tree_hash: &str) -> Result<()> {
+    // Tree restoration is recursive: directories recurse into subtree hashes,
+    // while files materialize blob contents at the target path.
     let tree_entries: Vec<TreeEntry> = utils::parse_tree(root_path, tree_hash)?;
 
     for entry in tree_entries {
@@ -147,6 +151,9 @@ fn checkout_branch(root_path: &Path, branch_name: &str) -> Result<()> {
     Ok(())
 }
 
+/// Switches repository state to a branch or commit.
+///
+/// Includes safety checks to prevent overwriting uncommitted working-directory changes.
 pub fn checkout(root_path: &Path, target: &str) -> Result<()> {
     utils::ensure_repo_exists(root_path)?;
 

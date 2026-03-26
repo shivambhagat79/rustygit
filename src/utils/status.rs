@@ -1,3 +1,5 @@
+//! Helpers for resolving commit/tree state and materializing path-hash maps.
+
 use crate::{commands, utils};
 use anyhow::{Result, bail};
 use std::{
@@ -6,6 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+/// Returns the current commit hash from HEAD (attached or detached), if any.
 pub fn get_current_commit_hash(root_path: &Path) -> Result<Option<String>> {
     let head_path = root_path.join(".rustygit").join("HEAD");
     let head_content = std::fs::read_to_string(head_path)?.trim().to_string();
@@ -30,6 +33,7 @@ pub fn get_current_commit_hash(root_path: &Path) -> Result<Option<String>> {
     Ok(Some(current_commit_hash))
 }
 
+/// Returns the current HEAD tree hash, if HEAD points to a commit.
 pub fn get_current_tree_hash(root_path: &Path) -> Result<Option<String>> {
     let current_commit_hash = get_current_commit_hash(root_path)?;
 
@@ -48,6 +52,7 @@ pub fn get_current_tree_hash(root_path: &Path) -> Result<Option<String>> {
     }
 }
 
+/// Recursively expands a tree object into a `path -> blob_hash` map.
 pub fn get_tree_files_map(
     root_path: &Path,
     path: &Path,
@@ -74,6 +79,7 @@ pub fn get_tree_files_map(
     Ok(())
 }
 
+/// Recursively scans the working directory into a `path -> blob_hash` map.
 pub fn get_work_dir_map(
     root_path: &Path,
     path: &Path,

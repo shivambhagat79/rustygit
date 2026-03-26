@@ -1,3 +1,5 @@
+//! Staging commands for populating the index from the working directory.
+
 use crate::{commands, utils};
 use anyhow::{Result, anyhow, bail};
 use std::{collections::HashMap, path::Path};
@@ -25,6 +27,10 @@ fn add_all(root_path: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Stages a path into the index.
+///
+/// - `add <file>` stages a single file.
+/// - `add .` stages all non-ignored files recursively from the working directory.
 pub fn add(root_path: &Path, file: &Path) -> Result<()> {
     utils::ensure_repo_exists(root_path)?;
 

@@ -1,3 +1,5 @@
+//! Index file read/write helpers.
+
 use anyhow::{Result, anyhow, bail};
 use std::{
     collections::HashMap,
@@ -9,6 +11,7 @@ fn index_path(root_path: &Path) -> PathBuf {
     root_path.join(".rustygit").join("index")
 }
 
+/// Loads `.rustygit/index` into a `path -> blob_hash` map.
 pub fn read_index_map(root_path: &Path) -> Result<HashMap<PathBuf, String>> {
     let path = index_path(root_path);
 
@@ -38,6 +41,7 @@ pub fn read_index_map(root_path: &Path) -> Result<HashMap<PathBuf, String>> {
     Ok(map)
 }
 
+/// Persists the full index map to `.rustygit/index` in sorted path order.
 pub fn write_index_map(root_path: &Path, map: &HashMap<PathBuf, String>) -> Result<()> {
     let mut entries: Vec<(&PathBuf, &String)> = map.iter().collect();
     entries.sort_by(|a, b| a.0.cmp(b.0));
@@ -51,12 +55,14 @@ pub fn write_index_map(root_path: &Path, map: &HashMap<PathBuf, String>) -> Resu
     Ok(())
 }
 
+/// Inserts or replaces a single staged index entry.
 pub fn stage_index_entry(root_path: &Path, path: &Path, hash: &str) -> Result<()> {
     let mut map = read_index_map(root_path)?;
     map.insert(path.to_path_buf(), hash.to_string());
     write_index_map(root_path, &map)
 }
 
+/// Clears index contents.
 pub fn clear_index(root_path: &Path) -> Result<()> {
     fs::write(index_path(root_path), "")?;
     Ok(())

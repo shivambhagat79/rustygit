@@ -1,3 +1,5 @@
+//! Safety checks that prevent destructive overwrites.
+
 use crate::utils;
 use anyhow::{Result, bail};
 use std::{
@@ -5,6 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+/// Verifies checkout would not overwrite untracked or modified local files.
 pub fn checkout_safety_check(root_path: &Path, target_tree_hash: Option<String>) -> Result<()> {
     let current_tree_hash = utils::get_current_tree_hash(root_path)?;
 

@@ -1,3 +1,5 @@
+//! Repository status reporting across HEAD, index, and working directory.
+
 use crate::utils::{self, IgnoreRule};
 use anyhow::{Result, bail};
 use std::{
@@ -6,6 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+/// Returns a formatted status report with staged, modified, deleted, and untracked files.
 pub fn status(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String> {
     let mut work_dir_map: HashMap<PathBuf, String> = HashMap::new();
     utils::get_work_dir_map(root_path, Path::new(""), &mut work_dir_map)?;

@@ -1,7 +1,13 @@
+//! File removal command for staging deletions safely.
+
 use crate::utils;
 use anyhow::{Result, anyhow, bail};
 use std::{collections::HashMap, fs, path::Path};
 
+/// Removes `file` from index and working directory.
+///
+/// Refuses removal when the working copy differs from the staged index hash,
+/// preventing accidental data loss.
 pub fn rm(root_path: &Path, file: &Path) -> Result<()> {
     utils::ensure_repo_exists(root_path)?;
 

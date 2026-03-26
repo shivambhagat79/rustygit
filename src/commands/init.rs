@@ -1,7 +1,10 @@
+//! Repository initialization.
+
 use anyhow::Result;
 use std::fs;
 use std::path::Path;
 
+/// Initializes a new `.rustygit` repository in `path`.
 pub fn init(path: &Path) -> Result<()> {
     let rusty_git_dir = path.join(".rustygit");
 

@@ -1,3 +1,5 @@
+//! Branch creation and listing.
+
 use crate::utils;
 use anyhow::{Result, bail};
 use std::fs;
@@ -18,6 +20,7 @@ fn get_current_branch_name(root_path: &Path) -> Result<Option<String>> {
     Ok(None)
 }
 
+/// Creates a branch reference pointing at the current commit.
 pub fn create_branch(root_path: &Path, branch_name: &str) -> Result<()> {
     utils::ensure_repo_exists(root_path)?;
 
@@ -34,6 +37,7 @@ pub fn create_branch(root_path: &Path, branch_name: &str) -> Result<()> {
     Ok(())
 }
 
+/// Lists all local branches and marks the currently checked-out branch.
 pub fn branch(root_path: &Path) -> Result<()> {
     let current_branch = get_current_branch_name(root_path)?;
     let refs_path = root_path.join(".rustygit").join("refs").join("heads");

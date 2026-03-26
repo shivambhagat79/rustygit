@@ -1,3 +1,5 @@
+//! Tree object construction from index entries.
+
 use crate::utils::IgnoreRule;
 use crate::{commands, utils};
 use anyhow::Result;
@@ -33,6 +35,8 @@ fn write_tree_from_index(
     index_map: &HashMap<PathBuf, String>,
     prefix: &Path,
 ) -> Result<String> {
+    // The index stores flat file paths; this routine recursively groups entries
+    // by path prefix to materialize nested tree objects.
     let mut entries: Vec<TreeEntry> = Vec::new();
     let mut child_dirs: BTreeSet<String> = BTreeSet::new();
 
@@ -83,6 +87,7 @@ fn write_tree_from_index(
     Ok(tree_hash)
 }
 
+/// Builds and writes the root tree object using the current index contents.
 pub fn write_tree(repo_root: &Path, path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String> {
     let _ = path;
     let _ = ignore_rules;

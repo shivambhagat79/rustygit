@@ -1,3 +1,5 @@
+//! Working-directory diff rendering against HEAD-tracked content.
+
 use crate::utils::{self, IgnoreRule};
 use anyhow::Result;
 use similar::TextDiff;
@@ -6,6 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+/// Prints line-level differences between working directory files and HEAD.
 pub fn diff(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<()> {
     let mut work_dir_map: HashMap<PathBuf, String> = HashMap::new();
     let cur_tree_hash = utils::get_current_tree_hash(root_path)?;

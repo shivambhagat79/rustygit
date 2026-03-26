@@ -1,7 +1,12 @@
+//! Restores working-directory files from index state.
+
 use crate::utils;
 use anyhow::{Result, anyhow, bail};
 use std::{fs, path::Path};
 
+/// Restores `file` from index to working directory.
+///
+/// If the path is not staged in index, an existing working file is removed.
 pub fn restore(root_path: &Path, file: &Path) -> Result<()> {
     utils::ensure_repo_exists(root_path)?;
 

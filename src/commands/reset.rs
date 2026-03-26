@@ -1,3 +1,5 @@
+//! HEAD/index reset operations (`--soft` and mixed/default).
+
 use crate::utils;
 use anyhow::{Result, bail};
 use std::{fs, path::Path};
@@ -51,6 +53,10 @@ fn set_index_to_commit_tree(root_path: &Path, commit_hash: &str) -> Result<()> {
     Ok(())
 }
 
+/// Resets repository references to `target`.
+///
+/// - `soft = true`: move HEAD only (index/worktree unchanged)
+/// - `soft = false`: move HEAD and reset index to target commit tree
 pub fn reset(root_path: &Path, target: &str, soft: bool) -> Result<()> {
     utils::ensure_repo_exists(root_path)?;
 

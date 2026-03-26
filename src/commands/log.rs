@@ -1,3 +1,5 @@
+//! Commit history traversal and display.
+
 use crate::utils;
 use anyhow::Result;
 use std::{fs, path::Path};
@@ -12,6 +14,7 @@ fn get_parent_commit_hash(commit_data: &str) -> Option<String> {
     None
 }
 
+/// Traverses parent links from HEAD and prints commit history.
 pub fn log(root_path: &Path) -> Result<()> {
     utils::ensure_repo_exists(root_path)?;
 

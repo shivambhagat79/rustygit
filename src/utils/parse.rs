@@ -1,8 +1,11 @@
+//! Parsers for blob, tree, and commit objects.
+
 use crate::commands::TreeEntry;
 use anyhow::{Result, anyhow};
 use std::fs;
 use std::path::Path;
 
+/// Reads and parses a blob object into file content string.
 pub fn parse_blob(root_path: &Path, blob_hash: &str) -> Result<String> {
     let blob_path = root_path
         .join(".rustygit/objects")
@@ -21,6 +24,7 @@ pub fn parse_blob(root_path: &Path, blob_hash: &str) -> Result<String> {
     Ok(blob_content)
 }
 
+/// Reads and parses a commit object payload (without object header).
 pub fn parse_commit(root_path: &Path, commit_hash: &str) -> Result<String> {
     let commit_hash_path = root_path
         .join(".rustygit/objects")
@@ -48,6 +52,7 @@ pub fn parse_commit(root_path: &Path, commit_hash: &str) -> Result<String> {
     Ok(commit_content)
 }
 
+/// Parses raw tree object bytes into structured tree entries.
 pub fn parse_tree(root_path: &Path, tree_hash: &str) -> Result<Vec<TreeEntry>> {
     let tree_path = root_path
         .join(".rustygit/objects")
