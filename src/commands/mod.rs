@@ -1,6 +1,7 @@
 mod branch;
 mod checkout;
 mod commit;
+mod diff;
 mod init;
 mod log;
 mod object;
@@ -13,6 +14,7 @@ pub use branch::branch;
 pub use branch::create_branch;
 pub use checkout::checkout;
 pub use commit::commit;
+pub use diff::diff;
 pub use init::init;
 pub use log::log;
 pub use object::format_object;

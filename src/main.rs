@@ -70,6 +70,7 @@ enum Commands {
     /// This command displays the status of files in the working directory,
     /// indicating which files are staged, modified, or untracked.
     Status,
+    Diff,
 }
 
 fn main() -> Result<()> {
@@ -116,6 +117,10 @@ fn main() -> Result<()> {
             let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&root_path)?;
             let status = commands::status(&root_path, &ignore_rules)?;
             println!("\n{}", status);
+        }
+        Commands::Diff => {
+            let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&root_path)?;
+            commands::diff(&root_path, &ignore_rules)?;
         }
     }
 
