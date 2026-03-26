@@ -17,6 +17,12 @@ pub fn status(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String
         utils::get_tree_files_map(root_path, Path::new(""), &hash, &mut cur_tree_map)?;
     }
 
+    let effective_index_map: HashMap<PathBuf, String> = if index_map.is_empty() {
+        cur_tree_map.clone()
+    } else {
+        index_map.clone()
+    };
+
     let mut clean: bool = true;
     let mut staged_files: Vec<PathBuf> = Vec::new();
     let mut modified_files: Vec<PathBuf> = Vec::new();
@@ -46,7 +52,7 @@ pub fn status(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String
         if utils::is_ignored(&root_path.join(path), root_path, ignore_rules) {
             continue;
         }
-        let in_index = index_map.get(path);
+        let in_index = effective_index_map.get(path);
 
         match in_index {
             Some(index_hash) => {
@@ -62,7 +68,7 @@ pub fn status(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<String
         }
     }
 
-    for (path, _) in index_map.iter() {
+    for (path, _) in effective_index_map.iter() {
         if utils::is_ignored(&root_path.join(path), root_path, ignore_rules) {
             continue;
         }

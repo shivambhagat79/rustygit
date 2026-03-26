@@ -19,7 +19,7 @@ fn untracked_file_blocks_checkout() {
     // second commit removes a.txt
     fs::remove_file(repo_root.join("a.txt")).unwrap();
     rustygit::utils::write_index_map(&repo_root, &HashMap::new()).unwrap();
-    commands::commit(&repo_root, "Second".to_string(), &vec![]).unwrap();
+    commands::commit_with_all(&repo_root, "Second".to_string(), &vec![], true).unwrap();
 
     // untracked file at path that target wants to write
     fs::write(repo_root.join("a.txt"), b"untracked").unwrap();
@@ -72,7 +72,8 @@ fn modified_tracked_file_blocks_checkout_on_delete() {
     // commit that removes the file
     fs::remove_file(repo_root.join("a.txt")).unwrap();
     rustygit::utils::write_index_map(&repo_root, &HashMap::new()).unwrap();
-    let hash_second = commands::commit(&repo_root, "Second".to_string(), &vec![]).unwrap();
+    let hash_second =
+        commands::commit_with_all(&repo_root, "Second".to_string(), &vec![], true).unwrap();
 
     // checkout back to first
     commands::checkout(&repo_root, &hash_first).unwrap();

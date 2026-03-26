@@ -37,6 +37,11 @@ enum Commands {
         /// File to stage
         file: PathBuf,
     },
+    /// Remove a file from index and working directory
+    Rm {
+        /// File to remove
+        file: PathBuf,
+    },
     /// Write the current directory tree as a Git object
     ///
     /// This command creates a tree object representing the
@@ -50,6 +55,10 @@ enum Commands {
         /// The commit message describing the changes.
         #[arg(short, long)]
         message: Option<String>,
+
+        /// Automatically stage tracked files before committing.
+        #[arg(short = 'a')]
+        all: bool,
     },
     /// Logs the commit history
     ///
@@ -95,15 +104,19 @@ fn main() -> Result<()> {
             commands::add(&root_path, &file)?;
             println!("Added {}", file.display());
         }
+        Commands::Rm { file } => {
+            commands::rm(&root_path, &file)?;
+            println!("Removed {}", file.display());
+        }
         Commands::WriteTree => {
             let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&root_path)?;
             let hash = commands::write_tree(&root_path, &root_path, &ignore_rules)?;
             println!("Tree written successfully\nHash: {}", hash);
         }
-        Commands::Commit { message } => {
+        Commands::Commit { message, all } => {
             let message = message.unwrap_or_else(|| String::from(""));
             let ignore_rules: Vec<IgnoreRule> = utils::parse_ignore_file(&root_path)?;
-            let commit_hash = commands::commit(&root_path, message, &ignore_rules);
+            let commit_hash = commands::commit_with_all(&root_path, message, &ignore_rules, all);
 
             println!("Committed successfully!\nHash: {}", commit_hash?);
         }

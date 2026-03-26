@@ -2,7 +2,10 @@ use crate::utils::IgnoreRule;
 use crate::{commands, utils};
 use anyhow::{Result, bail};
 use std::fs;
-use std::path::Path;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 #[derive(Clone)]
 struct User {
@@ -20,21 +23,15 @@ struct CommitObject {
     timezone: String,
 }
 
-fn build_commit(
-    path: &Path,
-    message: String,
-    ignore_rules: &Vec<IgnoreRule>,
-) -> Result<CommitObject> {
-    let tree_hash = commands::write_tree(path, path, ignore_rules)?;
+fn build_commit(path: &Path, message: String) -> Result<CommitObject> {
+    let empty_ignore_rules = Vec::new();
+    let tree_hash = commands::write_tree(path, path, &empty_ignore_rules)?;
     let mut parent: Option<String> = None;
     let author = User {
         name: String::from("Shivam Bhagat"),
         email: String::from("shivambhagat@rustygit.com"),
     };
     let committer = author.clone();
-
-    let _ = ignore_rules;
-
     let head_path = path.join(".rustygit").join("HEAD");
     let head_content = fs::read_to_string(&head_path)?;
     let ref_path = head_content[5..].trim();
@@ -110,7 +107,70 @@ fn update_head(repo_root: &Path, commit_hash: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn commit(path: &Path, message: String, ignore_rules: &Vec<IgnoreRule>) -> Result<String> {
+fn get_current_tree_map(root_path: &Path) -> Result<HashMap<PathBuf, String>> {
+    let mut current_tree_map = HashMap::new();
+
+    if let Some(tree_hash) = utils::get_current_tree_hash(root_path)? {
+        utils::get_tree_files_map(root_path, Path::new(""), &tree_hash, &mut current_tree_map)?;
+    }
+
+    Ok(current_tree_map)
+}
+
+fn ensure_index_has_head_snapshot(root_path: &Path) -> Result<()> {
+    let index_map = utils::read_index_map(root_path)?;
+    if !index_map.is_empty() {
+        return Ok(());
+    }
+
+    let current_tree_map = get_current_tree_map(root_path)?;
+    if current_tree_map.is_empty() {
+        return Ok(());
+    }
+
+    utils::write_index_map(root_path, &current_tree_map)?;
+    Ok(())
+}
+
+fn auto_stage_tracked_files(root_path: &Path, ignore_rules: &Vec<IgnoreRule>) -> Result<()> {
+    let current_tree_map = get_current_tree_map(root_path)?;
+    let mut work_dir_map = HashMap::new();
+    utils::get_work_dir_map(root_path, Path::new(""), &mut work_dir_map)?;
+
+    let mut index_map = utils::read_index_map(root_path)?;
+
+    for (path, hash) in &current_tree_map {
+        index_map.entry(path.clone()).or_insert(hash.clone());
+    }
+
+    for (path, current_hash) in &current_tree_map {
+        if utils::is_ignored(&root_path.join(path), root_path, ignore_rules) {
+            continue;
+        }
+
+        match work_dir_map.get(path) {
+            Some(work_hash) => {
+                if work_hash != current_hash {
+                    let blob_hash = commands::write_blob(root_path, &root_path.join(path))?;
+                    index_map.insert(path.clone(), blob_hash);
+                }
+            }
+            None => {
+                index_map.remove(path);
+            }
+        }
+    }
+
+    utils::write_index_map(root_path, &index_map)?;
+    Ok(())
+}
+
+pub fn commit_with_all(
+    path: &Path,
+    message: String,
+    ignore_rules: &Vec<IgnoreRule>,
+    all: bool,
+) -> Result<String> {
     utils::ensure_repo_exists(&path)?;
 
     // ensure head is attached
@@ -121,7 +181,13 @@ pub fn commit(path: &Path, message: String, ignore_rules: &Vec<IgnoreRule>) -> R
         bail!("Cannot commit: HEAD is detached.");
     }
 
-    let commit_object = build_commit(path, message, ignore_rules)?;
+    if all {
+        auto_stage_tracked_files(path, ignore_rules)?;
+    } else {
+        ensure_index_has_head_snapshot(path)?;
+    }
+
+    let commit_object = build_commit(path, message)?;
     let data = format_commit(commit_object);
     let mut content: Vec<u8> = Vec::new();
 
@@ -132,6 +198,11 @@ pub fn commit(path: &Path, message: String, ignore_rules: &Vec<IgnoreRule>) -> R
     commands::write_object(path, &hash, &content)?;
 
     update_head(path, &hash)?;
+    utils::clear_index(path)?;
 
     Ok(hash)
+}
+
+pub fn commit(path: &Path, message: String, ignore_rules: &Vec<IgnoreRule>) -> Result<String> {
+    commit_with_all(path, message, ignore_rules, false)
 }
